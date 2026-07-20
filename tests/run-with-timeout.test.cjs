@@ -169,7 +169,16 @@ describe('#2351 run-with-timeout — kill semantics (POSIX process groups)', () 
     const hbFile = path.join(dir, 'heartbeat');
     fs.writeFileSync(parentFile, [
       'const cp = require("child_process");',
-      "const childCode = 'const fs=require(\"fs\");const hb=process.argv[1];process.on(\"SIGTERM\",()=>{});setInterval(()=>fs.writeFileSync(hb,String(Date.now())),100);';",
+      // The child writes its heartbeat ONCE synchronously at startup before
+      // entering the interval. Without that first write the file only appears
+      // ~100ms after the grandchild's runtime is up — and the whole window here
+      // is 1s covering TWO cold node starts, so on a loaded runner the timeout
+      // can fire before any heartbeat exists and the precondition below fails
+      // for reasons unrelated to reaping. The immediate write makes existence
+      // depend only on the child having started, which is what the precondition
+      // actually means to assert; the frozen-vs-ticking comparison that proves
+      // reaping is unchanged.
+      "const childCode = 'const fs=require(\"fs\");const hb=process.argv[1];process.on(\"SIGTERM\",()=>{});fs.writeFileSync(hb,String(Date.now()));setInterval(()=>fs.writeFileSync(hb,String(Date.now())),100);';",
       'cp.spawn(process.execPath, ["-e", childCode, process.argv[2]], { stdio: "ignore" });',
       'process.on("SIGTERM", () => process.exit(0));',
       'setInterval(() => {}, 1000);',
