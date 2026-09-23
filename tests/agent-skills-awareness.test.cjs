@@ -50,3 +50,56 @@ describe('project skills awareness', () => {
     );
   });
 });
+
+// #4649: the discovery steps live in exactly one place. Inline copies drifted
+// (31 of them across canonical and compact agents) and would silently survive
+// any change made to the shared reference.
+describe('project skills discovery is consolidated onto the shared reference (#4649)', () => {
+  const DISCOVERY_REF = 'gsd-core/references/project-skills-discovery.md';
+  const discoveryAgents = [
+    'gsd-code-fixer',
+    'gsd-code-reviewer',
+    'gsd-codebase-mapper',
+    'gsd-debugger',
+    'gsd-doc-verifier',
+    'gsd-doc-writer',
+    'gsd-eval-auditor',
+    'gsd-executor',
+    'gsd-integration-checker',
+    'gsd-intel-updater',
+    'gsd-nyquist-auditor',
+    'gsd-pattern-mapper',
+    'gsd-phase-researcher',
+    'gsd-plan-checker',
+    'gsd-planner',
+    'gsd-roadmapper',
+    'gsd-security-auditor',
+    'gsd-ui-auditor',
+    'gsd-ui-checker',
+    'gsd-ui-researcher',
+    'gsd-verifier',
+  ];
+
+  const agentFiles = fs.readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md'));
+
+  for (const agentName of discoveryAgents) {
+    for (const file of [`${agentName}.md`, `${agentName}.compact.md`]) {
+      if (!agentFiles.includes(file)) continue;
+      test(`${file} @-includes the project skills discovery reference`, () => {
+        const content = fs.readFileSync(path.join(AGENTS_DIR, file), 'utf8');
+        assert.ok(content.includes(`@~/.claude/${DISCOVERY_REF}`), `${file} must @-include ${DISCOVERY_REF}`);
+      });
+    }
+  }
+
+  test('no agent file carries an inline copy of the discovery steps', () => {
+    const inline = agentFiles.filter((f) =>
+      fs.readFileSync(path.join(AGENTS_DIR, f), 'utf8').includes('SKILL.md'));
+    assert.deepStrictEqual(inline, [], `inline discovery steps belong in ${DISCOVERY_REF}`);
+  });
+
+  test('the shared reference still carries the discovery steps', () => {
+    const content = fs.readFileSync(path.join(__dirname, '..', DISCOVERY_REF), 'utf8');
+    assert.ok(content.includes('SKILL.md'), `${DISCOVERY_REF} must describe the SKILL.md read`);
+  });
+});
