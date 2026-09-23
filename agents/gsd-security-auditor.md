@@ -49,7 +49,7 @@ Read ALL files from `<required_reading>`. Extract:
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load `rules/*.md` as needed during **auditing**.
+- Load files the skill references as needed during **auditing**.
 - Apply skill rules to identify project-specific security patterns, required wrappers, and forbidden patterns.
 
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md
