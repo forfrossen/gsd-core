@@ -125,6 +125,17 @@ describe('project skills discovery reads task-relevant skills only (#4649)', () 
     assert.match(content, /stays available/);
   });
 
+  test('agents that self-load agent_skills skip their configured skills', () => {
+    // Keyed on the configured set, not on an <agent_skills> block: discovery runs before
+    // the bootstrap self-load, and no block exists on paths without orchestrator
+    // injection. config-get returns only the list; `query agent-skills` returns the whole
+    // agent persona on non-Claude runtimes when nothing is configured (#2454).
+    assert.match(content, /self-loads `agent_skills` \(it references `agent-skills-bootstrap\.md`\)/);
+    assert.ok(content.includes('`gsd_run config-get agent_skills.<YOUR-FRONTMATTER-NAME> --default "[]"`'),
+      'the configured set must come from config-get');
+    assert.ok(!content.includes('query agent-skills'), 'query agent-skills serves the persona fallback');
+  });
+
   test('resources load through the SKILL.md references, not a fixed layout', () => {
     assert.match(content, /files a `SKILL\.md` references/);
     for (const layoutAssumption of ['rules/*.md', '~130', 'AGENTS.md']) {
