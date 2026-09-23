@@ -29,7 +29,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load `rules/*.md` as needed during **mapping**.
+- Load files the skill references as needed during **mapping**.
 - Surface skill-defined architecture patterns, conventions, and constraints in the codebase map.
 
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md

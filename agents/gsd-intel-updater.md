@@ -15,7 +15,7 @@ Skipping this causes hallucinated context and broken output.
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load `rules/*.md` as needed during **intel updates**.
+- Load files the skill references as needed during **intel updates**.
 - Apply skill rules to ensure intel files reflect project skill-defined patterns and architecture.
 
 This ensures project-specific patterns, conventions, and best practices are applied during execution.

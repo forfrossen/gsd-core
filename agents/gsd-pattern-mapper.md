@@ -35,7 +35,7 @@ Before analyzing patterns, discover project context:
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, coding conventions, and architectural patterns.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load `rules/*.md` as needed during **analysis**.
+- Load files the skill references as needed during **analysis**.
 
 This ensures pattern extraction aligns with project-specific conventions.
 </project_context>

@@ -103,3 +103,38 @@ describe('project skills discovery is consolidated onto the shared reference (#4
     assert.ok(content.includes('SKILL.md'), `${DISCOVERY_REF} must describe the SKILL.md read`);
   });
 });
+
+// #4649 direction 1: the index read is scoped to task-relevant skills and follows the
+// Agent Skills progressive-disclosure model (metadata, then body, then referenced files)
+// instead of the layout of the skill pack the block was written for (#672).
+describe('project skills discovery reads task-relevant skills only (#4649)', () => {
+  const content = fs.readFileSync(
+    path.join(__dirname, '..', 'gsd-core', 'references', 'project-skills-discovery.md'), 'utf8');
+
+  test('the index read covers only the frontmatter of each skill', () => {
+    assert.match(content, /read only the YAML frontmatter/);
+    assert.doesNotMatch(content, /Read `SKILL\.md` for each skill/);
+  });
+
+  test('a full SKILL.md is read only when its description fits the task', () => {
+    assert.match(content, /full `SKILL\.md` only for skills whose `description` fits the current task/);
+  });
+
+  test('a skill filtered out at the index level stays reachable', () => {
+    assert.match(content, /stays available/);
+  });
+
+  test('resources load through the SKILL.md references, not a fixed layout', () => {
+    assert.match(content, /files a `SKILL\.md` references/);
+    for (const layoutAssumption of ['rules/*.md', '~130', 'AGENTS.md']) {
+      assert.ok(!content.includes(layoutAssumption), `reference must not assume ${layoutAssumption}`);
+    }
+  });
+
+  test('no agent file tells its role to load rules/*.md', () => {
+    const stale = fs.readdirSync(AGENTS_DIR)
+      .filter((f) => f.endsWith('.md'))
+      .filter((f) => fs.readFileSync(path.join(AGENTS_DIR, f), 'utf8').includes('rules/*.md'));
+    assert.deepStrictEqual(stale, [], 'role lines must follow the files a skill references');
+  });
+});
