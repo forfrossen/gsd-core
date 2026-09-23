@@ -49,7 +49,7 @@ Before auditing, discover project context:
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load `rules/*.md` as needed during **auditing**.
+- Load files the skill references as needed during **auditing**.
 
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md
 </project_context>
