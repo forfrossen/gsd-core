@@ -7,6 +7,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const { splitLines } = require('../gsd-core/bin/lib/text-lines.cjs');
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 
@@ -129,6 +130,19 @@ describe('project skills discovery reads task-relevant skills only (#4649)', () 
     for (const layoutAssumption of ['rules/*.md', '~130', 'AGENTS.md']) {
       assert.ok(!content.includes(layoutAssumption), `reference must not assume ${layoutAssumption}`);
     }
+  });
+
+  test('no agent or reference tells the agent not to load AGENTS.md', () => {
+    // AGENTS.md is the project instruction file on AGENTS.md-based runtimes, and the
+    // converters no longer strip such a line, so it would reach those runtimes verbatim.
+    const refsDir = path.join(__dirname, '..', 'gsd-core', 'references');
+    const files = [
+      ...fs.readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md')).map((f) => path.join(AGENTS_DIR, f)),
+      ...fs.readdirSync(refsDir).filter((f) => f.endsWith('.md')).map((f) => path.join(refsDir, f)),
+    ];
+    const offending = files.filter((f) =>
+      splitLines(fs.readFileSync(f, 'utf8')).some((line) => /not load.{0,200}AGENTS\.md/i.test(line)));
+    assert.deepStrictEqual(offending.map((f) => path.relative(path.join(__dirname, '..'), f)), []);
   });
 
   test('no agent file tells its role to load rules/*.md', () => {
