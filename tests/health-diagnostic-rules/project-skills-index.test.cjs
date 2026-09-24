@@ -94,6 +94,14 @@ describe('W030: project skill index (#4649)', () => {
     assert.match(diagnostics[0].message, /500-line/);
   });
 
+  test('499 lines is within the guideline', (t) => {
+    const project = withProject(t);
+    const content = skillMd({ name: 'edge-minus', description: 'Edge case.', bodyLines: 494 });
+    assert.strictEqual(lineCount(content), 499);
+    writeSkill(project, '.claude/skills', 'edge-minus', content);
+    assert.deepStrictEqual(rule.check(buildPlanningSnapshot(project)), []);
+  });
+
   test('exactly 500 lines is within the guideline', (t) => {
     const project = withProject(t);
     // 5 frontmatter/blank lines + 495 body lines = 500 lines.
@@ -101,6 +109,16 @@ describe('W030: project skill index (#4649)', () => {
     assert.strictEqual(lineCount(content), 500);
     writeSkill(project, '.claude/skills', 'edge', content);
     assert.deepStrictEqual(rule.check(buildPlanningSnapshot(project)), []);
+  });
+
+  test('501 lines is one over the guideline and is reported', (t) => {
+    const project = withProject(t);
+    const content = skillMd({ name: 'edge-plus', description: 'Edge case.', bodyLines: 496 });
+    assert.strictEqual(lineCount(content), 501);
+    writeSkill(project, '.claude/skills', 'edge-plus', content);
+    const diagnostics = rule.check(buildPlanningSnapshot(project));
+    assert.strictEqual(diagnostics.length, 1);
+    assert.match(diagnostics[0].message, /has 501 lines/);
   });
 
   test('a skill missing a description and over 500 lines yields one diagnostic per finding', (t) => {
