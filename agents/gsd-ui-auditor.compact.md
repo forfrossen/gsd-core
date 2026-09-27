@@ -47,7 +47,7 @@ Before auditing, discover project context:
 
 **Project instructions:** Read `./CLAUDE.md` if present; follow all project-specific guidelines.
 
-**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
+**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md — apply skill rules when scoring against project design conventions.
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md
 </project_context>
 

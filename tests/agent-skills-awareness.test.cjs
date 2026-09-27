@@ -90,6 +90,19 @@ describe('project skills discovery is consolidated onto the shared reference (#4
         const content = fs.readFileSync(path.join(AGENTS_DIR, file), 'utf8');
         assert.ok(content.includes(`@~/.claude/${DISCOVERY_REF}`), `${file} must @-include ${DISCOVERY_REF}`);
       });
+
+      // The reference defers "Application" to the calling agent's file, so each
+      // discovery agent must say how its role applies the skills it loads.
+      test(`${file} states how its role applies the project skills it loads`, () => {
+        const content = fs.readFileSync(path.join(AGENTS_DIR, file), 'utf8');
+        const include = `@~/.claude/${DISCOVERY_REF}`;
+        const after = content.slice(content.indexOf(include) + include.length);
+        const block = after.split(/<\/project_context>|\*\*agent_skills:\*\*/)[0];
+        const application = splitLines(block)
+          .filter((line) => !/^- Load files the skill references as needed during /.test(line))
+          .join('\n');
+        assert.match(application, /\w/, `${file} must follow the discovery @-include with a role-specific application statement`);
+      });
     }
   }
 

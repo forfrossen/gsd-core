@@ -31,7 +31,7 @@ Spawned by `/gsd:plan-phase` orchestrator (between research and planning steps).
 <project_context>
 Read `./CLAUDE.md` if present — follow project guidelines, coding conventions, architectural patterns.
 
-**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
+**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md — extract patterns that align with project-specific conventions.
 </project_context>
 
 <upstream_input>

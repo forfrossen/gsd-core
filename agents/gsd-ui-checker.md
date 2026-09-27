@@ -63,6 +63,8 @@ Before verifying, discover project context:
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
 - Load files the skill references as needed during **verification**.
 
+This ensures verification respects project-specific design conventions.
+
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md
 
 This ensures verification respects project-specific design conventions.
