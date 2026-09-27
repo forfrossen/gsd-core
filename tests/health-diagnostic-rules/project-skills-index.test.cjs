@@ -19,9 +19,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
+const fc = require('../helpers/fast-check-setup.cjs');
 const { createTempDir, createTempProject, cleanup, sandboxHome } = require('../helpers.cjs');
 const { buildPlanningSnapshot } = require('../../gsd-core/bin/lib/planning-snapshot.cjs');
 const { SEVERITY } = require('../../gsd-core/bin/lib/health-diagnostic-types.cjs');
+const initMod = require('../../gsd-core/bin/lib/init.cjs');
 const { RULES } = require('../../gsd-core/bin/lib/health-diagnostic-rules/project-skills-index.cjs');
 
 const rule = RULES.find((r) => r.code === 'W030');
@@ -143,5 +145,53 @@ describe('W030: project skill index (#4649)', () => {
     sandboxHome(t, home);
     writeSkill(home, '.claude/skills', 'personal', skillMd({ name: 'personal' }));
     assert.deepStrictEqual(rule.check(buildPlanningSnapshot(project)), []);
+  });
+
+  test('property: a line-count finding is emitted exactly when a SKILL.md has more than 500 lines, for LF or CRLF, with or without a final newline', (t) => {
+    const project = withProject(t);
+    const snapshot = buildPlanningSnapshot(project);
+    const skillFile = path.join(project, '.claude', 'skills', 'sized', 'SKILL.md');
+    fs.mkdirSync(path.dirname(skillFile), { recursive: true });
+    const header = ['---', 'name: sized', 'description: A sized skill.', '---'];
+
+    fc.assert(
+      fc.property(
+        fc.oneof(fc.integer({ min: 490, max: 510 }), fc.integer({ min: header.length, max: 1200 })),
+        fc.constantFrom('\n', '\r\n'),
+        fc.boolean(),
+        (lines, eol, finalNewline) => {
+          const body = Array.from({ length: lines - header.length }, (_, i) => `Line ${i + 1}.`);
+          fs.writeFileSync(skillFile, [...header, ...body].join(eol) + (finalNewline ? eol : ''));
+          const lineFindings = rule.check(snapshot).filter((d) => /-line guideline/.test(d.message));
+          if (lines > 500) {
+            assert.strictEqual(lineFindings.length, 1, `${lines} lines must be reported`);
+            assert.match(lineFindings[0].message, new RegExp(`has ${lines} lines`));
+          } else {
+            assert.deepStrictEqual(lineFindings, [], `${lines} lines must not be reported`);
+          }
+        },
+      ),
+    );
+  });
+
+  test('a skill manifest scan that throws degrades to no finding instead of breaking /gsd-health', (t) => {
+    const project = withProject(t);
+    writeSkill(project, '.claude/skills', 'legacy-notes', skillMd({ name: 'legacy-notes' }));
+    t.mock.method(initMod, 'buildSkillManifest', () => { throw new Error('EACCES: skill root unscannable'); });
+    assert.deepStrictEqual(rule.check(buildPlanningSnapshot(project)), []);
+  });
+
+  test('a SKILL.md unreadable after the manifest scan is skipped; other skills are still checked', (t) => {
+    const project = withProject(t);
+    writeSkill(project, '.claude/skills', 'vanished', skillMd({ name: 'vanished', description: 'Gone.', bodyLines: 700 }));
+    writeSkill(project, '.claude/skills', 'big-pack', skillMd({ name: 'big-pack', description: 'Large.', bodyLines: 700 }));
+    const snapshot = buildPlanningSnapshot(project);
+    const scanned = initMod.buildSkillManifest(project);
+    assert.ok(scanned.skills.some((s) => s.name === 'vanished'), 'the scan saw the skill before it was removed');
+    cleanup(path.join(project, '.claude', 'skills', 'vanished'));
+    t.mock.method(initMod, 'buildSkillManifest', () => scanned);
+    const messages = rule.check(snapshot).map((d) => d.message);
+    assert.strictEqual(messages.length, 1);
+    assert.match(messages[0], /big-pack\/SKILL\.md has \d+ lines/);
   });
 });
