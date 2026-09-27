@@ -44,7 +44,6 @@ type Diagnostic = healthDiagnosticMod.Diagnostic;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import initMod = require('../init.cjs');
-const { buildSkillManifest } = initMod;
 
 import { splitLines } from '../text-lines.cjs';
 
@@ -57,9 +56,11 @@ function countLines(content: string): number {
 }
 
 function checkProjectSkillsIndex(snapshot: PlanningSnapshot): Diagnostic[] {
-  let skills: ReturnType<typeof buildSkillManifest>['skills'];
+  let skills: ReturnType<typeof initMod.buildSkillManifest>['skills'];
   try {
-    skills = buildSkillManifest(snapshot.cwd).skills;
+    // Looked up on the module at call time, not destructured at load, so the
+    // degrade path below is reachable from a test through t.mock.method.
+    skills = initMod.buildSkillManifest(snapshot.cwd).skills;
   } catch {
     // Advisory rule: an unscannable skill root degrades to "no finding",
     // never an exception that breaks /gsd-health itself.
