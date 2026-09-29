@@ -61,7 +61,7 @@ are not concrete fixes.
 <project_context>
 Before verifying: read `./CLAUDE.md` if present, follow project-specific guidelines.
 
-**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md — this ensures verification respects project-specific design conventions.
+**Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md — apply skill rules when checking the UI design contract against project design conventions.
 
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md
 </project_context>

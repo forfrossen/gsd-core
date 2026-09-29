@@ -16,7 +16,6 @@ ${AGENT_SKILLS_RESEARCHER}
 **Phase requirement IDs (MUST address):** {phase_req_ids}
 
 **Project instructions:** Read ./CLAUDE.md or ./.claude/CLAUDE.md if either exists; follow project-specific guidelines.
-**Project skills:** Check .claude/skills/ or .agents/skills/ directory if either exists. Read SKILL.md files and account for project skill patterns.
 </additional_context>
 
 <output>
