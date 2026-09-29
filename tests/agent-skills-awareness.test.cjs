@@ -88,7 +88,9 @@ function applicationStatement(content) {
     if (line.trim() === '') break;
     following.push(line);
   }
-  return [inline, ...following].join('\n').replace(/^\s*—\s*/, '').trim();
+  // A restated step 6 ("Load files the skill references ...") says nothing about the role.
+  return [inline, ...following.filter((line) => !/^\s*- Load files the skill references/.test(line))]
+    .join('\n').replace(/^\s*—\s*/, '').trim();
 }
 
 describe('project skills discovery is consolidated onto the shared reference (#4649)', () => {
