@@ -29,6 +29,11 @@ const {
   convertClaudeCommandToOpencodeSkill,
   convertClaudeCommandToKiloSkill,
 } = require('../gsd-core/bin/lib/install-engine.cjs');
+// #4649: the second copy of neutralizeAgentReferences, in the runtime artifact
+// conversion module; both copies must keep every line.
+const {
+  neutralizeAgentReferences: conversionNeutralizeAgentReferences,
+} = require('../gsd-core/bin/lib/runtime-artifact-conversion.cjs');
 
 // Sample Claude agent frontmatter (matches actual GSD agent format)
 const SAMPLE_AGENT = `---
@@ -526,11 +531,14 @@ describe('neutralizeAgentReferences', () => {
     assert.ok(neutralizeAgentReferences(input, 'AGENTS.md').includes('AGENTS.md'));
   });
 
-  test('keeps every line instead of deleting instructions (#4649)', () => {
+  test('keeps every line instead of deleting instructions, in both copies (#4649)', () => {
     // Deleting a matched line left an empty numbered item ("5. ") in the
-    // project-skills discovery steps on every AGENTS.md-based runtime.
+    // project-skills discovery steps on the runtimes whose converters ran it
+    // (Codex, OpenCode, Kilo, Copilot and Antigravity).
     const input = '1. List skills.\n2. Do NOT load full `AGENTS.md` files — example.\n3. Apply them.';
-    assert.strictEqual(neutralizeAgentReferences(input, 'AGENTS.md'), input);
+    for (const neutralize of [neutralizeAgentReferences, conversionNeutralizeAgentReferences]) {
+      assert.strictEqual(neutralize(input, 'AGENTS.md'), input);
+    }
   });
 
   test('preserves claude- prefixes (CSS classes, package names)', () => {
