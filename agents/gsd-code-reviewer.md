@@ -40,7 +40,6 @@ Before reviewing, discover project context:
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions during review.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load files the skill references as needed during **review**.
 - Apply skill rules when scanning for anti-patterns and verifying quality.
 
 **agent_skills:** self-load per @~/.claude/gsd-core/references/agent-skills-bootstrap.md

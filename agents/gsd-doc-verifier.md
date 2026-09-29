@@ -46,7 +46,7 @@ Before verifying, discover project context:
 **Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
 **Project skills:** @~/.claude/gsd-core/references/project-skills-discovery.md
-- Load files the skill references as needed during **verification**.
+- Apply skill rules when checking documentation claims against project conventions and terminology.
 
 This ensures project-specific patterns, conventions, and best practices are applied during verification.
 </project_context>
