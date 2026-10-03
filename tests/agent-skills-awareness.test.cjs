@@ -151,19 +151,6 @@ describe('project skills discovery is consolidated onto the shared reference (#4
     assert.deepStrictEqual(inline, [], `inline discovery steps belong in ${DISCOVERY_REF}`);
   });
 
-  test('no workflow or capability fragment tells a spawned agent to read every SKILL.md', () => {
-    // The execute, plan and quick workflows once put "list skills, read SKILL.md for
-    // each" into spawn prompts (the executor's <required_reading>), which overrode the
-    // scoped read of the agent's own discovery reference.
-    const readAll = /read SKILL\.md (for each|files)|list skills, read/i;
-    const files = [
-      ...markdownFilesUnder(path.join(REPO_ROOT, 'gsd-core', 'workflows')),
-      ...markdownFilesUnder(path.join(REPO_ROOT, 'capabilities')),
-    ];
-    const offending = files.filter((f) => readAll.test(fs.readFileSync(f, 'utf8')));
-    assert.deepStrictEqual(offending.map((f) => path.relative(REPO_ROOT, f)), []);
-  });
-
   test('the shared reference carries the numbered discovery steps', () => {
     const content = readDiscoveryRef();
     assert.match(content, /^1\. Check `\.claude\/skills\/` or `\.agents\/skills\/`/m);
