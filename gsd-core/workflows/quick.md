@@ -319,6 +319,8 @@ ${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md (Research fi
 
 ${AGENT_SKILLS_PLANNER}
 
+**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) — read SKILL.md files, plans should account for project skill rules
+
 {For each active entry in `PLAN_PRE_HOOKS_JSON` where `kind == "contribution"` and `into == "planner"` (in array order): inject the entry's `fragment.inline` verbatim here, plus its resolved `configValues` when the entry carries them. If no active planner contributions exist, omit this block entirely.}
 
 </planning_context>
@@ -467,6 +469,7 @@ ${DISCUSS_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-CONTEXT.md (User decision
 ${RESEARCH_MODE ? '- ' + QUICK_DIR + '/' + quick_id + '-RESEARCH.md (Research findings — use to inform implementation choices)' : ''}
 - ${STATE_PATH} (Project state)
 - ./CLAUDE.md or ./.claude/CLAUDE.md (Project instructions, if exists)
+- .claude/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
 </required_reading>
 
 ${AGENT_SKILLS_EXECUTOR}
