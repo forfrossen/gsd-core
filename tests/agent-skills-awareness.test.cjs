@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { splitLines } = require('../gsd-core/bin/lib/text-lines.cjs');
+const { lfByteCount } = require('../scripts/workflow-size.cjs');
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 
@@ -187,27 +188,26 @@ describe('project skills discovery reads task-relevant skills only (#4649)', () 
     // injection. config-get returns only the list; `query agent-skills` returns the whole
     // agent persona on non-Claude runtimes when nothing is configured (#2454).
     const content = readDiscoveryRef();
-    assert.match(content, /self-loads `agent_skills` \(it references `agent-skills-bootstrap\.md`\)/);
-    assert.ok(content.includes('`gsd_run query config-get agent_skills.<YOUR-FRONTMATTER-NAME> --raw --default "[]"`'),
+    assert.match(content, /If your agent file references `agent-skills-bootstrap\.md`, its self-load already delivers the skills configured for your agent type\./);
+    assert.ok(content.includes('Run `gsd_run query config-get agent_skills.<YOUR-FRONTMATTER-NAME> --raw --default "[]"` to list them'),
       'the configured set must come from config-get, in the repository form');
     assert.ok(!content.includes('query agent-skills'), 'query agent-skills serves the persona fallback');
-    // davesienkowski, #5079: match on the configured project-relative path, never on a
-    // global: entry, so no project skill becomes unreachable.
-    assert.match(content, /a `global:` entry never skips a project skill/);
-    // trek-e, #5079: entries are written in more than one form. buildAgentSkillsBlock
-    // resolves `./x` and `x/` to the same directory, so the comparison ignores both. A
-    // skill is skipped only where the self-load delivers it: the self-load refuses an
-    // absolute path and a directory whose real path leaves the project, and it appends
-    // `/SKILL.md` to a project entry, so an entry ending in `/SKILL.md` delivers nothing.
-    assert.match(content, /only when one of those entries equals its project-relative directory after dropping a leading `\.\/` and a trailing `\/` from the entry/);
-    assert.match(content, /that directory's real path \(with symbolic links resolved\) lies inside the project/);
-    assert.ok(content.includes('the entry `.claude/skills/<skill>`, with or without a leading `./` or a trailing `/`, skips the skill in `.claude/skills/<skill>/`'),
-      'the example must show the entry as it is written in agent_skills');
-    assert.match(content, /Any other entry skips nothing: the self-load cannot resolve an absolute path or an entry that ends in `\/SKILL\.md`/);
+    // trek-e, #5079: entries are written in more than one form, and a skill is skipped
+    // only where the self-load delivers it. davesienkowski, #5079: a global: entry never
+    // skips a project skill. CONFIGURATION.md explains which entries the self-load refuses.
+    assert.match(content, /Skip a skill from step 2 only when an entry, after dropping a leading `\.\/` and a trailing `\/`, equals its project-relative directory \(for example `\.claude\/skills\/<skill>`\) and that directory's real path \(symbolic links resolved\) lies inside the project\./);
+    assert.match(content, /Any other entry \(`global:`, absolute, ending in `\/SKILL\.md`\) or a failed command skips nothing\./);
     // The runtime converters rewrite `./.claude/` but, on some runtimes, not a bare
     // `.claude/`, so a literal `./.claude/` would render an example that contradicts itself.
     assert.ok(!content.includes('./.claude/'), 'the reference must not spell `./.claude/` literally');
-    assert.match(content, /If the command fails, skip nothing\./);
+  });
+
+  test('the discovery reference stays small enough to include on every spawn', () => {
+    // trek-e, #5079: every discovery agent @-includes the reference, so every spawn pays
+    // for it, even in a project without skills.
+    const MAX_BYTES = 1600;
+    const bytes = lfByteCount(path.join(REPO_ROOT, DISCOVERY_REF));
+    assert.ok(bytes <= MAX_BYTES, `project-skills-discovery.md is ${bytes} bytes; keep it at or under ${MAX_BYTES}`);
   });
 
   test('resources load through the SKILL.md references, not a fixed layout', () => {
